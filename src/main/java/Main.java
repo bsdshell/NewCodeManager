@@ -151,8 +151,9 @@ public class Main  extends Application {
                     for (List<String> list : setCode) {
 
                         MyTextArea myTextArea = (new MyTextArea(list)).createMyTextArea();
-                        //vboxRightContainer.getChildren().add(myTextArea);
                         vboxRightContainer.getChildren().add(myTextArea);
+                        //vboxRightContainer.getChildren().add(new Pane(myTextArea));
+                        //vboxRightContainer.getChildren().add(myTextArea);
                         addImageToVbox(vboxRightContainer, list, imgWidth, imgHeight);
                         textAreaList.add(myTextArea);
 
@@ -535,9 +536,16 @@ public class Main  extends Application {
         List<String> imgList = extractImageFiles(list);
         List<ImageView> imageViewList = imageFileToImageView(imgList, imgWidth, imgHeight);
         for(ImageView iv : imageViewList) {
-            BorderPane borderPane = new BorderPane();
-            borderPane.setCenter(iv);
-            vbox.getChildren().add(borderPane);
+
+//            BorderPane borderPane = new BorderPane();
+//            borderPane.setCenter(iv);
+//            vbox.getChildren().add(borderPane);
+            FlowPane flowPane = new FlowPane();
+            flowPane.setPrefSize(imgWidth, imgHeight);
+            flowPane.getChildren().add(iv);
+            vbox.getChildren().add(flowPane);
+
+
         }
     }
 
