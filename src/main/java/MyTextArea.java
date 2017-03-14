@@ -18,7 +18,10 @@ class MyTextArea extends TextArea{
             this.appendText(line + "\n");
             Print.pbl("s=" + line + "\n");
         }
-        this.setPrefSize( Double.MAX_VALUE, lineHeight*(list.size() + 5) );
+        //this.setPrefSize( Double.MAX_VALUE, lineHeight*(list.size() + 5) );
+        double textAreaHeight = lineHeight*(list.size() + 5);
+        Print.pbl("textAreaHeight=" + textAreaHeight);
+        this.setMinSize(1000, textAreaHeight);
 
         return this;
     }
