@@ -13,7 +13,7 @@ final class ProcessList {
     final Map<String, List<List<String>>> mapList = new HashMap<>();
     final Map<String, Set<String>> prefixFullKeyMap = new HashMap<>();
     Map<String, Set<List<String>>> prefixWordMap = new HashMap<>();
-    final Map<String, Set<String>> wordsCompletion = new HashMap<>();
+    Map<String, Set<String>> wordsCompletion = new HashMap<>();
 
     public ProcessList(String fName) {
 //        String fName = "/Users/cat/myfile/github/snippets/snippet_test.m";
@@ -78,6 +78,7 @@ final class ProcessList {
         List<String> listKeys = new ArrayList<>();
         for(List<String> list : lists){
             if(list.size() > 0){
+
                 List<String> splitKeys = Aron.split(list.get(0), ":");
                 if(splitKeys.size() > 0){
 
@@ -155,13 +156,12 @@ final class ProcessList {
         }
         return map;
     }
-
     /**
      * Example:
-     * jlist_list : * : java list, java cool
+     * jlist_list : * : vi cmd, java cool
      * my awesome code1
      *
-     * str = "java list, java cool"
+     * str = vi cmd, java cool
      *
      * listCode contains two lines
      *
@@ -180,10 +180,11 @@ final class ProcessList {
 
         if(listCode.size() > 1) {
             List<String> list = Aron.splitTrim(str, ",");
+            // list = ["vi cmd", "java cool"]
+
             for (String words : list) {
+                // words = "vi cmd"
                 //
-                // map: prefixes -> abbreviation
-                // Example: keyWords= "vi cmd"
                 // "v" -> "vi cmd"
                 // "vi" -> "vi cmd"
                 // "vi " -> "vi cmd"
@@ -191,37 +192,35 @@ final class ProcessList {
                 // "vi cm" -> "vi cmd"
                 // "vi cmd" -> "vi cmd"
                 //
-                for(int i=0; i<words.length(); i++){
-                    String prefix = words.substring(0, i+1);
-                    Set<String> value = wordsCompletion.get(prefix);
-                    if(value != null ){
-                        value.add(words);
-                    }else{
-                        Set<String> set = new HashSet<>();
-                        set.add(words);
-                        wordsCompletion.put(prefix, set);
-                    }
-                }
+                // "c" -> "vi cmd"
+                // "cm" -> "vi cmd"
+                // "cmd" -> "vi cmd"
+                List<String> wlist = Aron.split(words, "\\s+");
+                prefixStringMap(wlist, wordsCompletion);
 
+                // dog =>  dog->set("")
+                // dog cat => dog->set("cat")
+                // dog cat cow => dog -> set("cat cow")
+                //             => dog cat -> set("cow")
+                //             => dog cat cow -> set("")
                 List<String> listWord = Aron.split(words, "\\s+");
-                String prefixKey = "";
-
-                for(String word : listWord){
-                    prefixKey = prefixKey + " " + word;
-                    prefixKey = prefixKey.trim().toLowerCase();
-                    Set<List<String>> value = mapSet.get(prefixKey);
-                    if (value != null) {
-                        value.add(listCode.subList(1, listCode.size()));
-
-                        mapSet.put(prefixKey, value);
-                    } else {
-                        Set<List<String>> tmpSet = new HashSet<>();
-
-                        tmpSet.add(listCode.subList(1, listCode.size()));
-                        mapSet.put(prefixKey, tmpSet);
-
+                for(int i=0; i<listWord.size(); i++){
+                    List<String> subList = listWord.subList(i, listWord.size());
+                    String prefixKey = "";
+                    for(String word : subList){
+                        prefixKey = prefixKey + " " + word;
+                        prefixKey = prefixKey.trim().toLowerCase();
+                        Set<List<String>> set = mapSet.get(prefixKey);
+                        if (set != null) {
+                            set.add(listCode.subList(1, listCode.size()));
+                            mapSet.put(prefixKey, set);
+                        } else {
+                            Set<List<String>> tmpSet = new HashSet<>();
+                            tmpSet.add(listCode.subList(1, listCode.size()));
+                            mapSet.put(prefixKey, tmpSet);
+                        }
+                        Print.pbl("------------------");
                     }
-                    Print.pbl("------------------");
                 }
                 Print.pbl("==============");
             }
@@ -230,4 +229,53 @@ final class ProcessList {
         }
         return mapSet;
     }
+
+    // "vi cmd"
+    // "v" -> "vi cmd"
+    // "vi -> "vi cmd"
+    // "vi "-> "vi cmd"
+    // "vi c"-> "vi cmd"
+    // "vi cm" -> "vi cmd"
+    // "vi cmd" -> "vi cmd"
+    //
+    // "c" -> "cmd"
+    // "cm" -> "cmd"
+    // "cmd" -> "cmd"
+    static void prefixStringMap(List<String> list, Map<String, Set<String>> map){
+//        Map<String, Set<String>> map = new HashMap<>();
+
+        for(int k=0; k<list.size(); k++) {
+            String s = list.get(k);
+            for(int i=0; i<s.length(); i++) {
+                String key = s.substring(0, i + 1);
+                Print.pbl("key=" + key);
+                List<String> preList = list.subList(0, k);
+                Print.pbl("->" + listToStr(preList));
+                List<String> subList = list.subList(k, list.size());
+
+                Set<String> value = map.get(key);
+                if(value != null){
+                    value.add(listToStr(subList));
+                }else{
+                    Set<String> set = new HashSet<>();
+                    set.add(listToStr(subList));
+                    map.put(key, set);
+                }
+            }
+        }
+        for(Map.Entry<String, Set<String>> entry : map.entrySet()){
+            System.out.print("[" + entry.getKey() + "]->[" + entry.getValue() + "]");
+            Print.line();
+        }
+//        return map;
+    }
+
+    static String listToStr(List<String> list){
+        String retStr = "";
+        for(String s : list)
+            retStr += s + " ";
+
+        return retStr.trim();
+    }
+
 }
