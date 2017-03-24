@@ -1,4 +1,3 @@
-
 import classfile.Aron;
 import classfile.FileWatcher;
 import classfile.Print;
@@ -8,6 +7,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,18 +17,14 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-
 //import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -49,6 +46,8 @@ public class Main  extends Application {
         return Arrays.asList(
                 "/Users/cat/myfile/github/snippets/snippet.m",
                 "/Users/cat/myfile/private/secret.m"
+//                "/Users/cat/myfile/github/snippets/snippet_test.m"
+//                "/Users/cat/myfile/private/secret_test.m"
         );
     }
 
@@ -123,7 +122,7 @@ public class Main  extends Application {
                         MyTextFlow codeTextFlow = new MyTextFlow(list.subList(1, list.size()), textFlowPreWidth, textFlowPreHeight);
                         vboxRightContainer.getChildren().add(new FlowPane(codeTextFlow.createTextFlow()));
                         addImageToVbox(vboxRightContainer, list, imgWidth, imgHeight);
-                        TextArea textArea = appendStringToTextAre(list.subList(0, list.size()));
+                        //TextArea textArea = appendStringToTextAre(list.subList(0, list.size()));
                         //createListTextAreas(vboxTextFieldFile, textAreaList, textArea, lineHeight);
                     }
                     addContentToClipBoard(content, clipboard, lists);
@@ -144,17 +143,23 @@ public class Main  extends Application {
 
             if(current != null && !Strings.isNullOrEmpty(current.trim())) {
                 String inputKey = Aron.trimLeading(current).toLowerCase();
+                Print.pbl("inputKey=" + inputKey);
                 Set<List<String>> setCode = processList[0].prefixWordMap.get(inputKey);
+                Aron.printSet(setCode);
                 if(setCode != null && setCode.size() > 0) {
                     vboxRightContainer.getChildren().clear();
                     textAreaList.clear();
                     for (List<String> list : setCode) {
 
+                        // TODO: change textarea to textflow
+                        // vboxRightContainer.getChildren().add(new FlowPane(codeTextFlow.createTextFlow()));
+                        //
                         MyTextArea myTextArea = (new MyTextArea(list)).createMyTextArea();
                         vboxRightContainer.getChildren().add(myTextArea);
+
+                        addImageToVbox(vboxRightContainer, list, imgWidth, imgHeight);
                         //vboxRightContainer.getChildren().add(new Pane(myTextArea));
                         //vboxRightContainer.getChildren().add(myTextArea);
-                        addImageToVbox(vboxRightContainer, list, imgWidth, imgHeight);
                         textAreaList.add(myTextArea);
 
                     }
@@ -190,6 +195,7 @@ public class Main  extends Application {
                         Set<String> setWords = processList[0].wordsCompletion.get(prefix);
                         if (setWords != null && setWords.size() > 0) {
                             comboboxKeyWordSearch.getItems().addAll(new ArrayList<>(setWords));
+                            //comboboxKeyWordSearch.setVisibleRowCount(setWords.size());
                             if (!comboboxKeyWordSearch.isShowing()) {
                                 comboboxKeyWordSearch.show();
                             }
@@ -214,6 +220,8 @@ public class Main  extends Application {
                 Print.pbl("      event.getText()=" + event.getText());
                 Print.pbl(" event.getCharacter()=" + event.getCharacter());
 
+
+
                 String input = comboboxKeyWordSearch.getEditor().getText() + event.getText();
                 if (!Strings.isNullOrEmpty(input)) {
                     Print.pbl("input=" + input);
@@ -234,6 +242,19 @@ public class Main  extends Application {
             }
         });
 
+        comboboxAbbreSearch.getEditor().addEventFilter(KeyEvent.ANY, eventType -> {
+            if(eventType.getCode() == KeyCode.SPACE){
+                Print.pbl("inside press space OK");
+                Print.pbl("inside type       =[" + eventType.getText() + "]");
+                Print.pbl("inside getCodetype=[" + eventType.getCode().toString() + "]");
+            }
+
+            Print.pbl("outside type       =[" + eventType.getText() + "]");
+            Print.pbl("outside getCodetype=[" + eventType.getCode().toString() + "]");
+            if(eventType.getEventType() == KeyEvent.KEY_PRESSED){
+                Print.pbl("keypressed");
+            }
+        });
 
         comboboxAbbreSearch.getEditor().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             Print.pbl("KEY_PRESSED: KeyEvent       :=" + comboboxAbbreSearch.getEditor().getText());
@@ -537,13 +558,13 @@ public class Main  extends Application {
         List<ImageView> imageViewList = imageFileToImageView(imgList, imgWidth, imgHeight);
         for(ImageView iv : imageViewList) {
 
-//            BorderPane borderPane = new BorderPane();
-//            borderPane.setCenter(iv);
-//            vbox.getChildren().add(borderPane);
-            FlowPane flowPane = new FlowPane();
-            flowPane.setPrefSize(imgWidth, imgHeight);
-            flowPane.getChildren().add(iv);
-            vbox.getChildren().add(flowPane);
+            BorderPane borderPane = new BorderPane();
+            borderPane.setCenter(iv);
+            vbox.getChildren().add(borderPane);
+//            FlowPane flowPane = new FlowPane();
+//            flowPane.setPrefSize(imgWidth, imgHeight);
+//            flowPane.getChildren().add(iv);
+//            vbox.getChildren().add(flowPane);
 
 
         }
