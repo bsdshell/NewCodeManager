@@ -23,7 +23,6 @@ final class ProcessList {
     }
     public ProcessList(List<String> listFile) {
 //        String fName = "/Users/cat/myfile/github/snippets/snippet_test.m";
-
         List<List<String>> list2d = new ArrayList<>();
 
         for(String fName : listFile) {
@@ -79,15 +78,15 @@ final class ProcessList {
         for(List<String> list : lists){
             if(list.size() > 0){
 
-                List<String> splitKeys = Aron.split(list.get(0), ":");
+                List<String> splitKeys = Aron.splitTrim(list.get(0), ":");
                 if(splitKeys.size() > 0){
 
                     String abbreviation = splitKeys.get(0).toLowerCase().trim();
                     Print.pbl("key=" + abbreviation);
 
                     if(splitKeys.size() > 2) {
-                        Map<String, Set<List<String>>> oneBlockMap = prefixWordMap(splitKeys.get(2).toLowerCase().trim(), list);
-                        prefixWordMap = Aron.mergeMapSet(prefixWordMap, oneBlockMap);
+                        Map<String, Set<List<String>>> mapAutoWords = prefixWordMap(splitKeys.get(2).toLowerCase().trim(), list);
+                        prefixWordMap = Aron.mergeMapSet(prefixWordMap, mapAutoWords);
                     }
 
                     listKeys.add(abbreviation);
@@ -156,6 +155,7 @@ final class ProcessList {
         }
         return map;
     }
+
     /**
      * Example:
      * jlist_list : * : vi cmd, java cool
@@ -176,12 +176,13 @@ final class ProcessList {
      *          ...
      */
     private Map<String, Set<List<String>>> prefixWordMap(String str, List<String> listCode){
-        Map<String, Set<List<String>>> mapSet = new HashMap<>();
+        Map<String, Set<List<String>>> mapWordAuto = new HashMap<>();
 
         if(listCode.size() > 1) {
             List<String> list = Aron.splitTrim(str, ",");
             // list = ["vi cmd", "java cool"]
 
+            List<String> codeList = listCode.subList(1, listCode.size());
             for (String words : list) {
                 // words = "vi cmd"
                 //
@@ -195,29 +196,30 @@ final class ProcessList {
                 // "c" -> "vi cmd"
                 // "cm" -> "vi cmd"
                 // "cmd" -> "vi cmd"
-                List<String> wlist = Aron.split(words, "\\s+");
-                prefixStringMap(wlist, wordsCompletion);
-
+                //
+                prefixStringMap(words, wordsCompletion);
                 // dog =>  dog->set("")
                 // dog cat => dog->set("cat")
                 // dog cat cow => dog -> set("cat cow")
                 //             => dog cat -> set("cow")
                 //             => dog cat cow -> set("")
-                List<String> listWord = Aron.split(words, "\\s+");
-                for(int i=0; i<listWord.size(); i++){
-                    List<String> subList = listWord.subList(i, listWord.size());
+                // TODO: fix issue "vi cmd" can't be detected
+                List<String> listWords = Aron.splitTrim(words, "\\s+");
+                for(int i=0; i<listWords.size(); i++){
+                    List<String> subList = listWords.subList(i, listWords.size());
                     String prefixKey = "";
                     for(String word : subList){
                         prefixKey = prefixKey + " " + word;
                         prefixKey = prefixKey.trim().toLowerCase();
-                        Set<List<String>> set = mapSet.get(prefixKey);
+                        Print.pbl("-prefixKey=" + prefixKey);
+                        Set<List<String>> set = mapWordAuto.get(prefixKey);
                         if (set != null) {
-                            set.add(listCode.subList(1, listCode.size()));
-                            mapSet.put(prefixKey, set);
+                            set.add(codeList);
+                            mapWordAuto.put(prefixKey, set);
                         } else {
                             Set<List<String>> tmpSet = new HashSet<>();
-                            tmpSet.add(listCode.subList(1, listCode.size()));
-                            mapSet.put(prefixKey, tmpSet);
+                            tmpSet.add(codeList);
+                            mapWordAuto.put(prefixKey, tmpSet);
                         }
                         Print.pbl("------------------");
                     }
@@ -227,7 +229,7 @@ final class ProcessList {
         }else{
             Print.pbl("ERROR: invalid file format. listCode.size()=" + listCode.size());
         }
-        return mapSet;
+        return mapWordAuto;
     }
 
     // "vi cmd"
@@ -241,17 +243,15 @@ final class ProcessList {
     // "c" -> "cmd"
     // "cm" -> "cmd"
     // "cmd" -> "cmd"
-    static void prefixStringMap(List<String> list, Map<String, Set<String>> map){
-//        Map<String, Set<String>> map = new HashMap<>();
-
+    static void prefixStringMap(String words, Map<String, Set<String>> map){
+        List<String> list = Aron.splitTrim(words, "\\s+");
         for(int k=0; k<list.size(); k++) {
+            List<String> subList = list.subList(k, list.size());
+
             String s = list.get(k);
             for(int i=0; i<s.length(); i++) {
                 String key = s.substring(0, i + 1);
                 Print.pbl("key=" + key);
-                List<String> preList = list.subList(0, k);
-                Print.pbl("->" + listToStr(preList));
-                List<String> subList = list.subList(k, list.size());
 
                 Set<String> value = map.get(key);
                 if(value != null){
@@ -262,13 +262,69 @@ final class ProcessList {
                     map.put(key, set);
                 }
             }
+
+            // TODO: move to a method
+            String subWords = listToStr(subList);
+            for(int j=0; j<subWords.length(); j++){
+                String subKey = subWords.substring(0, j+1);
+                Set<String> set = map.get(subKey);
+                if(set != null){
+                    set.add(subWords);
+                }else{
+                    Set<String> tmpSet = new HashSet<>();
+                    tmpSet.add(subWords);
+                    map.put(subKey, tmpSet);
+                }
+            }
+
         }
+
+
+//        for(int i=0; i<words.length(); i++){
+//            String key = words.substring(0, i+1);
+//            Set<String> set = map.get(key);
+//            if(set != null){
+//                set.add(words);
+//            }else{
+//                Set<String> tmpSet = new HashSet<>();
+//                tmpSet.add(words);
+//                map.put(key, tmpSet);
+//            }
+//        }
+
         for(Map.Entry<String, Set<String>> entry : map.entrySet()){
             System.out.print("[" + entry.getKey() + "]->[" + entry.getValue() + "]");
             Print.line();
         }
-//        return map;
     }
+
+//    static void prefixStringMap(List<String> list, Map<String, Set<String>> map){
+////        Map<String, Set<String>> map = new HashMap<>();
+//
+//        for(int k=0; k<list.size(); k++) {
+//            String s = list.get(k);
+//            for(int i=0; i<s.length(); i++) {
+//                String key = s.substring(0, i + 1);
+//                Print.pbl("key=" + key);
+//                List<String> subList = list.subList(k, list.size());
+//
+//                Set<String> value = map.get(key);
+//                if(value != null){
+//                    value.add(listToStr(subList));
+//                }else{
+//                    Set<String> set = new HashSet<>();
+//                    set.add(listToStr(subList));
+//                    map.put(key, set);
+//                }
+//            }
+//        }
+//        for(Map.Entry<String, Set<String>> entry : map.entrySet()){
+//            System.out.print("[" + entry.getKey() + "]->[" + entry.getValue() + "]");
+//            Print.line();
+//        }
+////        return map;
+//    }
+
 
     static String listToStr(List<String> list){
         String retStr = "";

@@ -118,7 +118,6 @@ public class Main  extends Application {
                     textAreaList.clear();
 
                     for (List<String> list : lists) {
-
                         MyTextFlow codeTextFlow = new MyTextFlow(list.subList(1, list.size()), textFlowPreWidth, textFlowPreHeight);
                         vboxRightContainer.getChildren().add(new FlowPane(codeTextFlow.createTextFlow()));
                         addImageToVbox(vboxRightContainer, list, imgWidth, imgHeight);
