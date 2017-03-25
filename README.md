@@ -4,19 +4,17 @@
 #
 ### search by abbreviations
 ## Example:  jlist_string
-## j -> "code"
-## jl -> "code"
-## jli -> "code"
-## jlis -> "code"
-## jlist -> "code"
-## ...
-## jlist_string -> "code"
-##
-##
-### search by key word
-## Example: 
-## input=java list string  
-## java list string         
-## list string
-## string
+j -> "code"
+jl -> "code"
+jli -> "code"
+lis -> "code"
+list -> "code"
+...
+jlist_string -> "code"
+# search by keywords
+Example: 
+input="java list string"  
+java list string         
+list string
+string
 
