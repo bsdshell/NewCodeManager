@@ -1,5 +1,7 @@
 **/*.class
-
 # Package Files #
 *.war
 *.ear
+.idea/dictionaries/cat.xml
+.idea/workspace.xml
+.idea/vcs.xml
