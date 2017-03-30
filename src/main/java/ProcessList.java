@@ -27,7 +27,7 @@ final class ProcessList {
 
         for(String fName : listFile) {
             List<List<String>> lists1 = readCodeFile(fName);
-            list2d = Aron.mergeLists(list2d, lists1);
+            list2d = Aron.mergeListsDuplicate(list2d, lists1);
         }
         buildAutoCompletionKeyCodeMap(list2d);
     }
